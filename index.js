@@ -31,8 +31,13 @@ const bodyParser = require('body-parser'),
           value: JSON.stringify(req.query)
         }
       ]
-    }
+    };
   };
+
+// Throw error if postmanApiKey is missing
+if (!postmanApiKey) {
+  throw new Error('POSTMAN_API_KEY is required to run this application');
+}
 
 // Set the body parser as text body parser
 app.use(bodyParser.text());
@@ -46,14 +51,15 @@ app.use(bodyParser.json())
 // Register a wild-card endpoint with collection and environment
 app.all('/c/:collection/e/:environment', function (req, res) {
   // Extracting the uri-params from the request
-  const { collection, environment } = req.params;
-  
+  const { collection, environment } = req.params,
+    globals = extractGlobals(req);
+
   // Start the run
   run({
     collection,
     environment,
     postmanApiKey,
-    globals: extractGlobals(req)
+    globals
   }, (err) => {
     if (err) {
       // respond 500 if there was an error
@@ -63,18 +69,19 @@ app.all('/c/:collection/e/:environment', function (req, res) {
     // Once the execution starts respond back to the user
     res.status(200).send(customResponse);
   });
-})
+});
 
 // Register a wild-card endpoint with only collection
 app.all('/c/:collection', function (req, res) {
-   // Extracting the uri-params from the request
-  const { collection } = req.params;
-  
+  // Extracting the uri-params from the request
+  const { collection } = req.params,
+    globals = extractGlobals(req);
+
   // Start the run
   run({
     collection,
     postmanApiKey,
-    globals: extractGlobals(req)
+    globals
   }, (err) => {
     if (err) {
       // respond 500 if there was an error
