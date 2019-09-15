@@ -1,6 +1,6 @@
 const bodyParser = require('body-parser'),
   express = require('express'),
-  newman = require('newman'),
+  run = require('./runner'),
 
   // Create an express application
   app = express(),
@@ -8,30 +8,31 @@ const bodyParser = require('body-parser'),
   // Define the port to listen on
   PORT = process.env.PORT || 8080,
 
-  apiKey = process.env.POSTMAN_API_KEY,
-  customResponse = process.env.CUSTOM_RESPONSE || '';
+  // Postman API key (Can be found in user account settings)
+  postmanApiKey = process.env.POSTMAN_API_KEY,
 
-extractGlobals = function (req) {
-  return {
-    values: [
-      {
-        key: 'headers',
-        value: JSON.stringify(req.headers)
-      },
-      {
-        key: 'body',
-        value: JSON.stringify(req.body)
-      },
-      {
-        key: 'query',
-        value: JSON.stringify(req.query)
-      }
-    ]
-  }
-},
-getRandomArbitrary = function (max = 1000, min = 9999) {
-  return Math.round(Math.random() * (max - min) + min);
-}
+  // Allows you to set a custom response to be sent for the web hook calls
+  customResponse = process.env.CUSTOM_RESPONSE || '',
+
+  // Convert the request to globals to be transferred to the collection
+  extractGlobals = function (req) {
+    return {
+      values: [
+        {
+          key: 'headers',
+          value: JSON.stringify(req.headers)
+        },
+        {
+          key: 'body',
+          value: JSON.stringify(req.body)
+        },
+        {
+          key: 'query',
+          value: JSON.stringify(req.query)
+        }
+      ]
+    }
+  };
 
 // Set the body parser as text body parser
 app.use(bodyParser.text());
@@ -44,67 +45,45 @@ app.use(bodyParser.json())
 
 // Register a wild-card endpoint with collection and environment
 app.all('/c/:collection/e/:environment', function (req, res) {
-  const { collection, environment } = req.params,
-  id = getRandomArbitrary();
+  // Extracting the uri-params from the request
+  const { collection, environment } = req.params;
+  
+  // Start the run
+  run({
+    collection,
+    environment,
+    postmanApiKey,
+    globals: extractGlobals(req)
+  }, (err) => {
+    if (err) {
+      // respond 500 if there was an error
+      return res.status(500).send('ERROR: ' + err.message);
+    }
 
-  newman
-    .run({
-      collection: `https://api.getpostman.com/collections/${collection}?apikey=${apiKey}`,
-      environment: `https://api.getpostman.com/environments/${environment}?apikey=${apiKey}`,
-      globals: extractGlobals(req)
-    })
-    .on('start', function (err) {
-      if (err) {
-        return res.status(500).send('ERROR: ' + err.message);
-      }
-
-      // Once the execution starts respond back to the user
-      res.status(200).send(customResponse);
-    })
-    .on('item', function (err, { item }) {
-      console.log(`[${id}]`, item.request.method, item.request.url.toString());
-    })
-    .on('console', function (err, {level, messages}) {
-       // Log all console messages
-       console.log(`[${id}]`, level, messages);
-    })
-    .on('done', function (err, summary) {
-      if (err || summary.error) {
-        console.error(`[${id}]`,'error encountered', err || summary.error);
-      }
-    });
+    // Once the execution starts respond back to the user
+    res.status(200).send(customResponse);
+  });
 })
 
 // Register a wild-card endpoint with only collection
 app.all('/c/:collection', function (req, res) {
-  const { collection } = req.params,
-    id = getRandomArbitrary();
+   // Extracting the uri-params from the request
+  const { collection } = req.params;
   
-  newman
-    .run({
-      collection: `https://api.getpostman.com/collections/${collection}?apikey=${apiKey}`,
-      globals: extractGlobals(req)
-    })
-    .on('start', function (err) {
-      if (err) {
-        return res.status(500).send('ERROR: ' + err.message);
-      }
+  // Start the run
+  run({
+    collection,
+    postmanApiKey,
+    globals: extractGlobals(req)
+  }, (err) => {
+    if (err) {
+      // respond 500 if there was an error
+      return res.status(500).send('ERROR: ' + err.message);
+    }
 
-      // Once the execution starts respond back to the user
-      res.status(200).send(customResponse);
-    })
-    .on('item', function (err, { item }) {
-      console.log(`[${id}]`, item.request.method, item.request.url.toString());
-    })
-    .on('console', function (err, {level, messages}) {
-       // Log all console messages
-       console.log(`[${id}]`, level, messages);
-    })
-    .on('done', function (err, summary) {
-      if (err || summary.error) {
-        console.error(`[${id}]`,'error encountered', err || summary.error);
-      }
-    });
+    // Once the execution starts respond back to the user
+    res.status(200).send(customResponse);
+  });
 });
 
 // Start the application
