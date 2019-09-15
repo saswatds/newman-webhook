@@ -43,10 +43,10 @@ if (!postmanApiKey) {
 app.use(bodyParser.text());
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
- 
+app.use(bodyParser.urlencoded({ extended: false }));
+
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 // Register a wild-card endpoint with collection and environment
 app.all('/c/:collection/e/:environment', function (req, res) {
@@ -67,7 +67,7 @@ app.all('/c/:collection/e/:environment', function (req, res) {
     }
 
     // Once the execution starts respond back to the user
-    res.status(200).send(customResponse);
+    return res.status(200).send(customResponse);
   });
 });
 
@@ -89,7 +89,7 @@ app.all('/c/:collection', function (req, res) {
     }
 
     // Once the execution starts respond back to the user
-    res.status(200).send(customResponse);
+    return res.status(200).send(customResponse);
   });
 });
 
