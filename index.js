@@ -9,7 +9,7 @@ const bodyParser = require('body-parser'),
   PORT = process.env.PORT || 8080,
 
   apiKey = process.env.POSTMAN_API_KEY,
-  customResponse = process.env.CUSTOM_RESPONSE;
+  customResponse = process.env.CUSTOM_RESPONSE || '';
 
 extractGlobals = function (req) {
   return {
@@ -20,7 +20,7 @@ extractGlobals = function (req) {
       },
       {
         key: 'body',
-        value: req.body
+        value: JSON.stringify(req.body)
       },
       {
         key: 'query',
@@ -34,7 +34,13 @@ getRandomArbitrary = function (max = 1000, min = 9999) {
 }
 
 // Set the body parser as text body parser
-app.use(bodyParser.text({ type: '*/*' }));
+app.use(bodyParser.text());
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+ 
+// parse application/json
+app.use(bodyParser.json())
 
 // Register a wild-card endpoint with collection and environment
 app.all('/c/:collection/e/:environment', function (req, res) {
@@ -53,7 +59,7 @@ app.all('/c/:collection/e/:environment', function (req, res) {
       }
 
       // Once the execution starts respond back to the user
-      res.status(200).send(customResponse || 'OK');
+      res.status(200).send(customResponse);
     })
     .on('item', function (err, { item }) {
       console.log(`[${id}]`, item.request.method, item.request.url.toString());
@@ -85,7 +91,7 @@ app.all('/c/:collection', function (req, res) {
       }
 
       // Once the execution starts respond back to the user
-      res.status(200).send(customResponse || 'OK');
+      res.status(200).send(customResponse);
     })
     .on('item', function (err, { item }) {
       console.log(`[${id}]`, item.request.method, item.request.url.toString());
