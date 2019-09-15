@@ -1,0 +1,27 @@
+{
+  "name": "newman-webhook",
+  "version": "1.0.0",
+  "description": "Application to run a postman collection as a webhook",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saswatds/newman-webhook.git"
+  },
+  "keywords": [
+    "newman",
+    "webhook"
+  ],
+  "author": "Saswat Das <saswatds@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/saswatds/newman-webhook/issues"
+  },
+  "homepage": "https://github.com/saswatds/newman-webhook#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "newman": "^4.5.4"
+  }
+}
