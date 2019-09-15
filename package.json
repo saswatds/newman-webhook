@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/saswatds/newman-webhook#readme",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "newman": "^4.5.4"
   }

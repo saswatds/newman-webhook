@@ -1,4 +1,5 @@
-const express = require('express'),
+const bodyParser = require('body-parser'),
+  express = require('express'),
   newman = require('newman'),
 
   // Create an express application
@@ -12,12 +13,28 @@ const express = require('express'),
 
 extractGlobals = function (req) {
   return {
-    values: []
+    values: [
+      {
+        key: 'headers',
+        value: JSON.stringify(req.headers)
+      },
+      {
+        key: 'body',
+        value: req.body
+      },
+      {
+        key: 'query',
+        value: JSON.stringify(req.query)
+      }
+    ]
   }
 },
 getRandomArbitrary = function (max = 1000, min = 9999) {
   return Math.round(Math.random() * (max - min) + min);
 }
+
+// Set the body parser as text body parser
+app.use(bodyParser.text({ type: '*/*' }));
 
 // Register a wild-card endpoint with collection and environment
 app.all('/c/:collection/e/:environment', function (req, res) {
