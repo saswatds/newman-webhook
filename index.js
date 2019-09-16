@@ -48,6 +48,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
 
+app.get('/health', function (req, res) {
+  return res.status(200).send('200 OK');
+});
+
 // Register a wild-card endpoint with collection and environment
 app.all('/c/:collection/e/:environment', function (req, res) {
   // Extracting the uri-params from the request
